@@ -1,3 +1,4 @@
+//use bevy::input::mouse::*;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -13,7 +14,7 @@ pub fn create_app() -> App {
     }
 
     app.add_systems(Startup, add_player);
-    app.add_systems(Update, (respond_to_mouse_button_press, respond_to_mouse_move));
+    app.add_systems(Update, (respond_to_mouse_button_press, respond_to_mouse_move, respond_to_mouse_wheel_turn));
 
     // Do not do update, as this will disallow to do more steps
     // app.update(); //Don't!
@@ -39,14 +40,16 @@ fn respond_to_mouse_button_press(
 ) {
     let mut player_position = query.single_mut();
     if input.pressed(MouseButton::Left) {
-        // Do something
-        player_position.translation.x += 16.0;
+        player_position.rotate_z(0.1);
+    }
+    if input.pressed(MouseButton::Right) {
+        player_position.rotate_z(-0.1);
     }
 }
 
 fn respond_to_mouse_move(
     mut query: Query<&mut Transform, With<Player>>,
-    mut mouse_motion_event: EventReader<MouseMotion>,
+    mut mouse_motion_event: EventReader<bevy::input::mouse::MouseMotion>,
 ) {
     for event in mouse_motion_event.read() {
         let mut player_position = query.single_mut();
@@ -55,6 +58,17 @@ fn respond_to_mouse_move(
     }
 }
 
+fn respond_to_mouse_wheel_turn(
+    mut query: Query<&mut Transform, With<Player>>,
+    mut mouse_wheel_event: EventReader<bevy::input::mouse::MouseWheel>,
+) {
+    for event in mouse_wheel_event.read() {
+        let mut player_position = query.single_mut();
+        // Do something
+        player_position.scale.x *= 1.0 + ((event.x + event.y) / 10.0);
+        player_position.scale.y *= 1.0 + ((event.x + event.y) / 10.0);
+    }
+}
 
 #[cfg(test)]
 fn count_n_players(app: &mut App) -> usize {
@@ -63,7 +77,7 @@ fn count_n_players(app: &mut App) -> usize {
 }
 
 #[cfg(test)]
-fn get_player_coordinat(app: &mut App) -> Vec2 {
+fn get_player_position(app: &mut App) -> Vec2 {
     let mut query = app.world_mut().query::<(&Transform, &Player)>();
     let (transform, _) = query.single(app.world());
     transform.translation.xy()
@@ -77,9 +91,16 @@ fn get_player_scale(app: &mut App) -> Vec2 {
 }
 
 #[cfg(test)]
+fn get_player_rotation(app: &mut App) -> f32 {
+    let mut query = app.world_mut().query::<(&Transform, &Player)>();
+    let (transform, _) = query.single(app.world());
+    transform.rotation.z
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
-    use bevy::input::keyboard::KeyCode;
+    //use bevy::input::keyboard::KeyCode;
 
     #[test]
     fn test_can_create_app() {
@@ -103,7 +124,7 @@ mod tests {
     fn test_player_is_at_origin() {
         let mut app = create_app();
         app.update();
-        assert_eq!(get_player_coordinat(&mut app), Vec2::new(0.0, 0.0));
+        assert_eq!(get_player_position(&mut app), Vec2::new(0.0, 0.0));
     }
 
     #[test]
@@ -114,10 +135,17 @@ mod tests {
     }
 
     #[test]
+    fn test_player_is_not_rotated_at_start() {
+        let mut app = create_app();
+        app.update();
+        assert_eq!(get_player_rotation(&mut app), 0.0);
+    }
+
+    #[test]
     fn test_player_responds_to_mouse_move() {
         let mut app = create_app();
         app.update();
-        assert_eq!(get_player_coordinat(&mut app), Vec2::new(0.0, 0.0));
+        assert_eq!(get_player_position(&mut app), Vec2::new(0.0, 0.0));
 
         // Move the mouse
         app.world_mut().send_event(bevy::input::mouse::MouseMotion {
@@ -125,17 +153,17 @@ mod tests {
         });
 
         app.update();
-        assert_ne!(get_player_coordinat(&mut app), Vec2::new(0.0, 0.0));
+        assert_ne!(get_player_position(&mut app), Vec2::new(0.0, 0.0));
     }
 
     #[test]
     fn test_player_responds_to_mouse_button_press() {
         let mut app = create_app();
-        assert!(app.is_plugin_added::<InputPlugin>());
+        assert!(app.is_plugin_added::<bevy::input::InputPlugin>());
         app.update();
 
         // Not moved yet
-        assert_eq!(Vec3::new(0.0, 0.0, 0.0), get_player_position(&mut app));
+        assert_eq!(get_player_rotation(&mut app), 0.0);
 
         // Press the left mouse button
         app.world_mut()
@@ -145,6 +173,28 @@ mod tests {
         app.update();
 
         // Position must have changed now
-        assert_ne!(Vec3::new(0.0, 0.0, 0.0), get_player_position(&mut app));
+        assert_ne!(get_player_rotation(&mut app), 0.0);
+    }
+
+    #[test]
+    fn test_player_responds_to_mouse_wheel_turn() {
+        let mut app = create_app();
+        assert!(app.is_plugin_added::<bevy::input::InputPlugin>());
+        app.update();
+
+        // Not moved yet
+        assert_eq!(get_player_scale(&mut app), Vec2::new(64.0, 32.0));
+
+        // Scroll the mouse
+        app.world_mut().send_event(bevy::input::mouse::MouseWheel {
+            unit: bevy::input::mouse::MouseScrollUnit::Line,
+            x: 10.0,
+            y: 10.0,
+            window: Entity::PLACEHOLDER,
+        });
+        app.update();
+
+        // Moved now
+        assert_ne!(get_player_scale(&mut app), Vec2::new(64.0, 32.0));
     }
 }
