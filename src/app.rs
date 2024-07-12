@@ -103,14 +103,15 @@ mod tests {
     //use bevy::input::keyboard::KeyCode;
 
     #[test]
-    fn test_can_create_app() {
-        create_app();
+    fn test_empty_app_has_no_players() {
+        let mut app = App::new();
+        app.update();
+        assert_eq!(count_n_players(&mut app), 0);
     }
 
     #[test]
-    fn test_empty_app_has_no_players() {
-        let mut app = App::new();
-        assert_eq!(count_n_players(&mut app), 0);
+    fn test_can_create_app() {
+        create_app();
     }
 
     #[test]
@@ -127,19 +128,6 @@ mod tests {
         assert_eq!(get_player_position(&mut app), Vec2::new(0.0, 0.0));
     }
 
-    #[test]
-    fn test_player_has_a_custom_scale() {
-        let mut app = create_app();
-        app.update();
-        assert_eq!(get_player_scale(&mut app), Vec2::new(64.0, 32.0));
-    }
-
-    #[test]
-    fn test_player_is_not_rotated_at_start() {
-        let mut app = create_app();
-        app.update();
-        assert_eq!(get_player_rotation(&mut app), 0.0);
-    }
 
     #[test]
     fn test_player_responds_to_mouse_move() {
@@ -154,6 +142,13 @@ mod tests {
 
         app.update();
         assert_ne!(get_player_position(&mut app), Vec2::new(0.0, 0.0));
+    }
+
+    #[test]
+    fn test_player_is_not_rotated_at_start() {
+        let mut app = create_app();
+        app.update();
+        assert_eq!(get_player_rotation(&mut app), 0.0);
     }
 
     #[test]
@@ -194,6 +189,13 @@ mod tests {
 
         // Position must have changed now
         assert_ne!(get_player_rotation(&mut app), 0.0);
+    }
+
+    #[test]
+    fn test_player_has_a_custom_scale() {
+        let mut app = create_app();
+        app.update();
+        assert_eq!(get_player_scale(&mut app), Vec2::new(64.0, 32.0));
     }
 
     #[test]
