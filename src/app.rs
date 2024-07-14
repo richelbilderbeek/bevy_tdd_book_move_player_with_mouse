@@ -84,7 +84,7 @@ fn get_player_position(app: &mut App) -> Vec2 {
 }
 
 #[cfg(test)]
-fn get_player_scale(app: &mut App) -> Vec2 {
+fn get_player_size(app: &mut App) -> Vec2 {
     let mut query = app.world_mut().query::<(&Transform, &Player)>();
     let (transform, _) = query.single(app.world());
     transform.scale.xy()
@@ -195,7 +195,7 @@ mod tests {
     fn test_player_has_a_custom_scale() {
         let mut app = create_app();
         app.update();
-        assert_eq!(get_player_scale(&mut app), Vec2::new(64.0, 32.0));
+        assert_eq!(get_player_size(&mut app), Vec2::new(64.0, 32.0));
     }
 
     #[test]
@@ -205,7 +205,7 @@ mod tests {
         app.update();
 
         // Not moved yet
-        assert_eq!(get_player_scale(&mut app), Vec2::new(64.0, 32.0));
+        assert_eq!(get_player_size(&mut app), Vec2::new(64.0, 32.0));
 
         // Scroll the mouse
         app.world_mut().send_event(bevy::input::mouse::MouseWheel {
@@ -217,6 +217,6 @@ mod tests {
         app.update();
 
         // Moved now
-        assert_ne!(get_player_scale(&mut app), Vec2::new(64.0, 32.0));
+        assert_ne!(get_player_size(&mut app), Vec2::new(64.0, 32.0));
     }
 }
