@@ -65,8 +65,8 @@ fn respond_to_mouse_wheel_turn(
     for event in mouse_wheel_event.read() {
         let mut player_position = query.single_mut();
         // Do something
-        player_position.size.x *= 1.0 + ((event.x + event.y) / 10.0);
-        player_position.size.y *= 1.0 + ((event.x + event.y) / 10.0);
+        player_position.scale.x *= 1.0 + ((event.x + event.y) / 10.0);
+        player_position.scale.y *= 1.0 + ((event.x + event.y) / 10.0);
     }
 }
 
