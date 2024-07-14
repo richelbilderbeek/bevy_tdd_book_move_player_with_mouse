@@ -25,7 +25,7 @@ fn add_player(mut commands: Commands) {
     commands.spawn((
         SpriteBundle {
             transform: Transform {
-                scale: Vec3::new(64.0, 32.0, 0.0),
+                size: Vec3::new(64.0, 32.0, 0.0),
                 ..default()
             },
             ..default()
@@ -65,8 +65,8 @@ fn respond_to_mouse_wheel_turn(
     for event in mouse_wheel_event.read() {
         let mut player_position = query.single_mut();
         // Do something
-        player_position.scale.x *= 1.0 + ((event.x + event.y) / 10.0);
-        player_position.scale.y *= 1.0 + ((event.x + event.y) / 10.0);
+        player_position.size.x *= 1.0 + ((event.x + event.y) / 10.0);
+        player_position.size.y *= 1.0 + ((event.x + event.y) / 10.0);
     }
 }
 
@@ -87,7 +87,7 @@ fn get_player_position(app: &mut App) -> Vec2 {
 fn get_player_size(app: &mut App) -> Vec2 {
     let mut query = app.world_mut().query::<(&Transform, &Player)>();
     let (transform, _) = query.single(app.world());
-    transform.scale.xy()
+    transform.size.xy()
 }
 
 #[cfg(test)]
@@ -192,7 +192,7 @@ mod tests {
     }
 
     #[test]
-    fn test_player_has_a_custom_scale() {
+    fn test_player_has_a_custom_size() {
         let mut app = create_app();
         app.update();
         assert_eq!(get_player_size(&mut app), Vec2::new(64.0, 32.0));
