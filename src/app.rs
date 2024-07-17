@@ -14,7 +14,14 @@ pub fn create_app() -> App {
     }
 
     app.add_systems(Startup, add_player);
-    app.add_systems(Update, (respond_to_mouse_button_press, respond_to_mouse_move, respond_to_mouse_wheel_turn));
+    app.add_systems(
+        Update,
+        (
+            respond_to_mouse_button_press,
+            respond_to_mouse_move,
+            respond_to_mouse_wheel_turn,
+        ),
+    );
 
     // Do not do update, as this will disallow to do more steps
     // app.update(); //Don't!
@@ -127,7 +134,6 @@ mod tests {
         app.update();
         assert_eq!(get_player_position(&mut app), Vec2::new(0.0, 0.0));
     }
-
 
     #[test]
     fn test_player_responds_to_mouse_move() {
